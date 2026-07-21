@@ -1,0 +1,33 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.13"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "py-zed-open-capture"
+version = "0.1.0"
+description = "Python bindings for zed-open-capture (raw ZED/ZED-Mini/ZED-2/ZED-2i video capture without the CUDA-only ZED SDK)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+authors = [{ name = "Eryk Halicki" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Multimedia :: Video :: Capture",
+]
+dependencies = ["numpy"]
+
+[project.optional-dependencies]
+cv2 = ["opencv-python-headless"]
+
+[project.urls]
+Homepage = "https://github.com/ErykHalicki/py-zed-open-capture"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
+wheel.py-api = "cp312"
+
+[tool.cibuildwheel]
+build = "cp312-manylinux_aarch64"
