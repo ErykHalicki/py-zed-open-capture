@@ -16,17 +16,20 @@ Python, and applies it automatically when you open the camera.
 
 ## Install
 
+Not published to PyPI. Install the prebuilt wheel directly from the
+[Releases](https://github.com/ErykHalicki/py-zed-open-capture/releases) page:
+
 ```bash
-pip install py-zed-open-capture
+pip install https://github.com/ErykHalicki/py-zed-open-capture/releases/download/v0.1.0/py_zed_open_capture-0.1.0-cp312-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
 ```
 
-Prebuilt wheels are published as GitHub Releases for `linux_aarch64`
-(see the [Releases](https://github.com/ErykHalicki/py-zed-open-capture/releases)
-page) and cover Python >=3.12 via the stable ABI (one wheel, any 3.12+ interpreter).
-If no matching wheel is available, pip will build from source, which requires:
+That wheel targets `linux_aarch64` and Python >=3.12 via the stable ABI (one wheel, any
+3.12+ interpreter). To build from source instead (e.g. for a different architecture):
 
 ```bash
 sudo apt install build-essential cmake libusb-1.0-0-dev pkg-config
+git clone --recurse-submodules https://github.com/ErykHalicki/py-zed-open-capture.git
+pip install ./py-zed-open-capture
 ```
 
 ## Usage
