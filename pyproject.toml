@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "py-zed-open-capture"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python bindings for zed-open-capture (raw ZED/ZED-Mini/ZED-2/ZED-2i video capture without the CUDA-only ZED SDK)"
 readme = "README.md"
 license = { text = "MIT" }
