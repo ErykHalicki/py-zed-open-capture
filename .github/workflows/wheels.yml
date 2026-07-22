@@ -8,12 +8,16 @@ on:
 jobs:
   build_wheels:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Set up QEMU (for linux_aarch64 emulation)
+        if: matrix.arch == 'aarch64'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
@@ -21,18 +25,33 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21
         env:
-          CIBW_BUILD: "cp312-manylinux_aarch64"
-          CIBW_ARCHS: "aarch64"
+          CIBW_BUILD: "cp312-manylinux_${{ matrix.arch }}"
+          CIBW_ARCHS: "${{ matrix.arch }}"
           CIBW_BEFORE_ALL_LINUX: "yum install -y libusbx-devel || (apt-get update && apt-get install -y libusb-1.0-0-dev)"
           CIBW_BUILD_VERBOSITY: "1"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-linux-aarch64
+          name: wheels-linux-${{ matrix.arch }}
           path: wheelhouse/*.whl
 
+  build_sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build sdist
+        run: pipx run build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
   release:
-    needs: build_wheels
+    needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -40,8 +59,34 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-linux-aarch64
+          pattern: wheels-*
+          path: wheelhouse
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
           path: wheelhouse
       - uses: softprops/action-gh-release@v2
         with:
-          files: wheelhouse/*.whl
+          files: wheelhouse/*
+
+  publish_pypi:
+    needs: [build_wheels, build_sdist]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/py-zed-open-capture
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

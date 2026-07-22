@@ -30,4 +30,4 @@ build-dir = "build/{wheel_tag}"
 wheel.py-api = "cp312"
 
 [tool.cibuildwheel]
-build = "cp312-manylinux_aarch64"
+build = "cp312-manylinux_x86_64 cp312-manylinux_aarch64"

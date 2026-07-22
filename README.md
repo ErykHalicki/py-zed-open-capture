@@ -1,30 +1,26 @@
 # py-zed-open-capture
 
-Python bindings (via [nanobind](https://github.com/wjakob/nanobind)) for
-[zed-open-capture](https://github.com/stereolabs/zed-open-capture) -- raw video
-capture for the ZED, ZED-Mini, ZED-2 and ZED-2i stereo cameras that does **not**
-require CUDA or the official ZED SDK.
+Python bindings for [zed-open-capture](https://github.com/stereolabs/zed-open-capture)
+
+Allows raw video capture for the ZED, ZED-Mini, ZED-2 and ZED-2i stereo cameras without the official ZED SDK.
 
 ## Why this exists
 
-These cameras' onboard ISP can boot into a bad auto-exposure/auto-gain state that
-corrupts frames when the camera is opened as a plain UVC device (e.g. via
+ZED cameras can send corrupt frames when opened as a plain UVC device (e.g. via
 `cv2.VideoCapture`). Fixing it requires a vendor-specific register write over a UVC
 extension unit that isn't exposed by standard V4L2/OpenCV. `zed-open-capture`
-implements that fix (`resetAECAGC`); this package wraps it so it can be called from
-Python, and applies it automatically when you open the camera.
+implements that fix; this package wraps it so it can be called from
+Python without the full ZED SDK, and applies it automatically when you open the camera.
 
 ## Install
 
-Not published to PyPI. Install the prebuilt wheel directly from the
-[Releases](https://github.com/ErykHalicki/py-zed-open-capture/releases) page:
-
 ```bash
-pip install https://github.com/ErykHalicki/py-zed-open-capture/releases/download/v0.1.0/py_zed_open_capture-0.1.0-cp312-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
+pip install py-zed-open-capture
 ```
 
-That wheel targets `linux_aarch64` and Python >=3.12 via the stable ABI (one wheel, any
-3.12+ interpreter). To build from source instead (e.g. for a different architecture):
+Prebuilt wheels are published for `manylinux_x86_64` and `manylinux_aarch64`, Python
+>=3.12, via the stable ABI (one wheel per arch covers any 3.12+ interpreter). To build
+from source instead (e.g. for a different architecture):
 
 ```bash
 sudo apt install build-essential cmake libusb-1.0-0-dev pkg-config
@@ -64,18 +60,5 @@ bgr = to_bgr(frame)                # combined side-by-side BGR image, requires o
 ```
 
 `initialize_video()` calls the C++ `initializeVideo()`, which resets the camera's
-AEC/AGC ISP registers -- this is the step that avoids the corruption artifact. If it
+AEC/AGC ISP registers, this is the step that avoids the corruption artifact. If it
 reappears mid-session, call `cap.reset_aec_agc()`.
-
-## Development
-
-```bash
-git clone --recurse-submodules https://github.com/ErykHalicki/py-zed-open-capture.git
-cd py-zed-open-capture
-python -m venv .venv && source .venv/bin/activate
-pip install -v -e .
-```
-
-`third_party/zed-open-capture` is a git submodule of the upstream MIT-licensed
-project; only its video capture module is compiled (sensors/IMU support is not
-built, so `libhidapi` is not required).
