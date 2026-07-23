@@ -81,7 +81,18 @@ NB_MODULE(_py_zed_open_capture_ext, m) {
         .def(
             "get_last_frame",
             [](VideoCapture &self, uint64_t timeout_msec) -> nb::object {
-                const Frame &frame = self.getLastFrame(timeout_msec);
+                // getLastFrame() busy-waits (usleep spin) up to timeout_msec for a new
+                // frame with no GIL release of its own -- release it here so this call
+                // doesn't stall every other Python thread in the process (e.g. a
+                // second eye's reader, or another camera/device's background thread)
+                // for the whole wait. Must be re-acquired before touching any
+                // Python/nanobind objects below.
+                const Frame *frame_ptr;
+                {
+                    nb::gil_scoped_release release;
+                    frame_ptr = &self.getLastFrame(timeout_msec);
+                }
+                const Frame &frame = *frame_ptr;
                 if (frame.data == nullptr || frame.width == 0 || frame.height == 0)
                     return nb::none();
 

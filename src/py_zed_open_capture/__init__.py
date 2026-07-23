@@ -39,6 +39,7 @@ __all__ = [
     "VideoParams",
     "split_stereo",
     "to_bgr",
+    "to_rgb",
 ]
 
 
@@ -48,14 +49,27 @@ def split_stereo(frame: Frame):
     return frame.data[:, :half_row_bytes], frame.data[:, half_row_bytes:]
 
 
-def to_bgr(frame: Frame) -> np.ndarray:
-    """Convert a Frame's raw YUV 4:2:2 (YUYV) data to a BGR image.
-    Requires opencv: pip install py-zed-open-capture[cv2]"""
+def _require_cv2(fn_name: str):
     try:
         import cv2
     except ImportError as e:
         raise ImportError(
-            "to_bgr() requires opencv. Install with: pip install py-zed-open-capture[cv2]"
+            f"{fn_name}() requires opencv. Install with: pip install py-zed-open-capture[cv2]"
         ) from e
+    return cv2
+
+
+def to_bgr(frame: Frame) -> np.ndarray:
+    """Convert a Frame's raw YUV 4:2:2 (YUYV) data to a BGR image.
+    Requires opencv: pip install py-zed-open-capture[cv2]"""
+    cv2 = _require_cv2("to_bgr")
     arr = frame.data.reshape(frame.height, frame.width, frame.channels)
     return cv2.cvtColor(arr, cv2.COLOR_YUV2BGR_YUYV)
+
+
+def to_rgb(frame: Frame) -> np.ndarray:
+    """Convert a Frame's raw YUV 4:2:2 (YUYV) data to an RGB image.
+    Requires opencv: pip install py-zed-open-capture[cv2]"""
+    cv2 = _require_cv2("to_rgb")
+    arr = frame.data.reshape(frame.height, frame.width, frame.channels)
+    return cv2.cvtColor(arr, cv2.COLOR_YUV2RGB_YUYV)

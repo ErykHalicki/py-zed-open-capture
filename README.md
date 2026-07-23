@@ -53,10 +53,11 @@ Two standalone helpers are provided for the common post-processing steps (not pa
 the mirrored C++ API):
 
 ```python
-from py_zed_open_capture import split_stereo, to_bgr
+from py_zed_open_capture import split_stereo, to_bgr, to_rgb
 
 left, right = split_stereo(frame)  # raw YUV422 halves
 bgr = to_bgr(frame)                # combined side-by-side BGR image, requires opencv
+rgb = to_rgb(frame)                # combined side-by-side RGB image, requires opencv
 ```
 
 `initialize_video()` calls the C++ `initializeVideo()`, which resets the camera's
